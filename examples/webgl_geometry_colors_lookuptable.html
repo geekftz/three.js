@@ -2,9 +2,12 @@
 <html lang="en">
 	<head>
 		<title>three.js webgl - lookup table</title>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<link type="text/css" rel="stylesheet" href="main.css">
+		<meta charset="utf-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
+		/>
+		<link type="text/css" rel="stylesheet" href="main.css" />
 		<style>
 			body {
 				background-color: #fff;
@@ -16,9 +19,9 @@
 		</style>
 	</head>
 	<body>
-
 		<div id="info">
-			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> webgl - lookup table<br/>
+			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a>
+			webgl - lookup table<br />
 			vertex color values from a range of data values
 		</div>
 
@@ -34,13 +37,12 @@
 		</script>
 
 		<script type="module">
+			import * as THREE from "three";
 
-			import * as THREE from 'three';
+			import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 
-			import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
-
-			import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-			import { Lut } from 'three/addons/math/Lut.js';
+			import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+			import { Lut } from "three/addons/math/Lut.js";
 
 			let container;
 
@@ -49,155 +51,224 @@
 			let mesh, sprite;
 			let scene, uiScene;
 
-			let params;
+			const params = {
+				colorMap: "rainbow",
+			};
 
 			init();
 
 			function init() {
+				// 获取容器
+				container = document.getElementById("container");
 
-				container = document.getElementById( 'container' );
-
+				// 创建场景
 				scene = new THREE.Scene();
-				scene.background = new THREE.Color( 0xffffff );
+				scene.background = new THREE.Color(0xffffff);
 
-				uiScene = new THREE.Scene();
+				// uiScene = new THREE.Scene();
 
-				lut = new Lut();
-
+				// 窗口宽高
 				const width = window.innerWidth;
 				const height = window.innerHeight;
 
-				perpCamera = new THREE.PerspectiveCamera( 60, width / height, 1, 100 );
-				perpCamera.position.set( 0, 0, 10 );
-				scene.add( perpCamera );
+				// 透视相机（摄像机睁眼角度，摄像机视锥体长宽比，近端面，远端面）
+				perpCamera = new THREE.PerspectiveCamera(60, width / height, 1, 100);
+				// 默认右手坐标系（相机位置，x,y,z）
+				perpCamera.position.set(0, 0, 10);
+				// perpCamera.position.set(0, 0, 1);
+				scene.add(perpCamera);
 
-				orthoCamera = new THREE.OrthographicCamera( - 1, 1, 1, - 1, 1, 2 );
-				orthoCamera.position.set( 0.5, 0, 1 );
+				// 正交相机
+				// orthoCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 2);
+				// orthoCamera.position.set(0.5, 0, 1);
 
-				sprite = new THREE.Sprite( new THREE.SpriteMaterial( {
-					map: new THREE.CanvasTexture( lut.createCanvas() )
-				} ) );
-				sprite.material.map.colorSpace = THREE.SRGBColorSpace;
-				sprite.scale.x = 0.125;
-				uiScene.add( sprite );
+				// Lut属于Three.js的Math模块，主要方便对模型按照常见颜色方案进行上色，适用用于二维、三维的图表，比如下面这种颜色条。
+				lut = new Lut();
 
-				mesh = new THREE.Mesh( undefined, new THREE.MeshLambertMaterial( {
-					side: THREE.DoubleSide,
-					color: 0xF5F5F5,
-					vertexColors: true
-				} ) );
-				scene.add( mesh );
+				// 精灵是一个总是面朝着摄像机的平面，通常含有使用一个半透明的纹理。
+				sprite = new THREE.Sprite(
+					new THREE.SpriteMaterial({
+						map: new THREE.CanvasTexture(lut.createCanvas()),
+					})
+				);
+				// console.log(
+				// 	"🚀 --> file: webgl_geometry_colors_lookuptable.html:80 --> init --> sprite:",
+				// 	sprite
+				// );
+				// sprite.material.map.colorSpace = THREE.SRGBColorSpace;
+				// sprite.scale.x = 0.125;
+				// uiScene.add( sprite );
 
-				params	= {
-					colorMap: 'rainbow',
-				};
-				loadModel( );
+				// ========================================
 
-				const pointLight = new THREE.PointLight( 0xffffff, 3, 0, 0 );
-				perpCamera.add( pointLight );
+				// demo 立方体
+				// const geometry1 = new THREE.BoxGeometry(1, 1, 1);
+				// const material1 = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+				// const mesh1 = new THREE.Mesh(geometry1, material1);
+				// scene.add(mesh1);
 
-				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				// demo 面片
+				// const geometry1 = new THREE.BufferGeometry();
+				// // 创建一个简单的矩形. 在这里我们左上和右下顶点被复制了两次。
+				// // 因为在两个三角面片里，这两个顶点都需要被用到。
+				// const vertices = new Float32Array([
+				// 	-1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0,
+
+				// 	1.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0,
+				// ]);
+
+				// itemSize = 3 因为每个顶点都是一个三元组。
+				// geometry1.setAttribute(
+				// 	"position",
+				// 	new THREE.BufferAttribute(vertices, 3)
+				// );
+				// const material1 = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+				// const mesh1 = new THREE.Mesh(geometry1, material1);
+				// scene.add(mesh1);
+
+				// ========================================
+
+				// 表示基于以三角形为polygon mesh（多边形网格）的物体的类。
+				mesh = new THREE.Mesh(
+					undefined,
+					new THREE.MeshLambertMaterial({
+						side: THREE.DoubleSide,
+						color: 0xf5f5f5,
+						vertexColors: true,
+					})
+				);
+				scene.add(mesh);
+
+				// params = {
+				// 	colorMap: "rainbow",
+				// };
+
+				loadModel();
+
+				// 点光源
+				const pointLight = new THREE.PointLight(0xffffff, 3, 0, 0);
+				perpCamera.add(pointLight);
+
+				// 用WebGL渲染出你精心制作的场景，渲染器(antialias true开启抗锯齿，默认false)
+				renderer = new THREE.WebGLRenderer({ antialias: true });
+				// renderer = new THREE.WebGLRenderer();
+
+				// 两次或多次执行渲染方法.render()得到的像素数据叠加
 				renderer.autoClear = false;
-				renderer.setPixelRatio( window.devicePixelRatio );
-				renderer.setSize( width, height );
-				container.appendChild( renderer.domElement );
+				// 设置设备像素比
+				renderer.setPixelRatio(window.devicePixelRatio);
+				// 将输出canvas的大小调整为(width, height)并考虑设备像素比
+				renderer.setSize(width, height);
 
-				window.addEventListener( 'resize', onWindowResize );
+				// console.log(
+				// 	"🚀 --> file: webgl_geometry_colors_lookuptable.html:161 --> init --> renderer:",
+				// 	renderer
+				// );
 
-				const controls = new OrbitControls( perpCamera, renderer.domElement );
-				controls.addEventListener( 'change', render );
+				container.appendChild(renderer.domElement);
 
-				const gui = new GUI();
+				window.addEventListener("resize", onWindowResize);
 
-				gui.add( params, 'colorMap', [ 'rainbow', 'cooltowarm', 'blackbody', 'grayscale' ] ).onChange( function () {
+				// const controls = new OrbitControls(perpCamera, renderer.domElement);
+				// controls.addEventListener("change", render);
 
+				// const gui = new GUI();
+
+				// gui
+				// 	.add(params, "colorMap", [
+				// 		"rainbow",
+				// 		"cooltowarm",
+				// 		"blackbody",
+				// 		"grayscale",
+				// 	])
+				// 	.onChange(function () {
+				// 		updateColors();
+				// 		render();
+				// 	});
+			}
+
+			function loadModel() {
+				const loader = new THREE.BufferGeometryLoader();
+
+				loader.load("models/json/pressure.json", function (geometry) {
+					// console.log(
+					// 	"🚀 --> file: webgl_geometry_colors_lookuptable.html:171 --> geometry:",
+					// 	geometry
+					// );
+					// 根据边界矩形将几何体居中
+					geometry.center();
+					// 通过面片法向量的平均值计算每个顶点的法向量。
+					geometry.computeVertexNormals();
+
+					// default color attribute
+					const colors = [];
+
+					for (let i = 0, n = geometry.attributes.position.count; i < n; ++i) {
+						colors.push(1, 1, 1);
+					}
+					// console.log(
+					// 	"🚀 --> file: webgl_geometry_colors_lookuptable.html:209 --> colors:",
+					// 	colors
+					// );
+					// console.log(
+					// 	"🚀 --> file: webgl_geometry_colors_lookuptable.html:205 --> geometry.attributes.position.count:",
+					// 	geometry.attributes.position.count
+					// );
+
+					geometry.setAttribute(
+						"color",
+						new THREE.Float32BufferAttribute(colors, 3)
+					);
+
+					mesh.geometry = geometry;
 					updateColors();
+
 					render();
-
-				} );
-
+				});
 			}
 
 			function onWindowResize() {
-
 				const width = window.innerWidth;
 				const height = window.innerHeight;
 
 				perpCamera.aspect = width / height;
 				perpCamera.updateProjectionMatrix();
 
-				renderer.setSize( width, height );
+				renderer.setSize(width, height);
 				render();
-
 			}
 
 			function render() {
-
 				renderer.clear();
-				renderer.render( scene, perpCamera );
-				renderer.render( uiScene, orthoCamera );
-
-			}
-
-			function loadModel( ) {
-
-				const loader = new THREE.BufferGeometryLoader();
-				loader.load( 'models/json/pressure.json', function ( geometry ) {
-
-					geometry.center();
-					geometry.computeVertexNormals();
-
-					// default color attribute
-					const colors = [];
-
-					for ( let i = 0, n = geometry.attributes.position.count; i < n; ++ i ) {
-
-						colors.push( 1, 1, 1 );
-
-					}
-
-					geometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colors, 3 ) );
-
-					mesh.geometry = geometry;
-					updateColors();
-
-					render();
-
-				} );
-
+				renderer.render(scene, perpCamera);
+				// renderer.render(uiScene, orthoCamera);
 			}
 
 			function updateColors() {
+				lut.setColorMap(params.colorMap);
 
-				lut.setColorMap( params.colorMap );
-
-				lut.setMax( 2000 );
-				lut.setMin( 0 );
+				lut.setMax(2000);
+				lut.setMin(0);
 
 				const geometry = mesh.geometry;
 				const pressures = geometry.attributes.pressure;
 				const colors = geometry.attributes.color;
 				const color = new THREE.Color();
 
-				for ( let i = 0; i < pressures.array.length; i ++ ) {
+				for (let i = 0; i < pressures.array.length; i++) {
+					const colorValue = pressures.array[i];
 
-					const colorValue = pressures.array[ i ];
+					color.copy(lut.getColor(colorValue)).convertSRGBToLinear();
 
-					color.copy( lut.getColor( colorValue ) ).convertSRGBToLinear();
-
-					colors.setXYZ( i, color.r, color.g, color.b );
-
+					colors.setXYZ(i, color.r, color.g, color.b);
 				}
 
 				colors.needsUpdate = true;
 
 				const map = sprite.material.map;
-				lut.updateCanvas( map.image );
+				lut.updateCanvas(map.image);
 				map.needsUpdate = true;
-
 			}
-
 		</script>
-
 	</body>
 </html>
